@@ -1,0 +1,125 @@
+#!/bin/bash
+
+read -p "Ingrese el usuario del servidor: " user
+read -p "Ingrese la direccion host del servidor: " server
+read -p "Puerto de ingreso: " port
+port=${port:-2220}
+descarga_ar="$HOME/Escritorio"
+
+ssh -p "$port" "$user@$server" -t '
+cd /tmp;
+while true; do
+  echo "Seleccione una opcion: ";
+  echo "1) Crear una carpeta";
+  echo "2) Crear un archivo";
+  echo "3) Eliminar archivos o carpetas";
+  echo "4) Ver contenido de una carpeta";
+  echo "5) Descargar un archivo o carpeta";
+  echo "6) Salir";
+  read opcion;
+  case $opcion in
+    1)
+      echo "Ingrese el nombre de la carpeta: ";
+      read nombre_carpeta;
+      mkdir "$nombre_carpeta";
+      echo "Carpeta \"$nombre_carpeta\" se ha creado correctamente";
+      ls -ld "$nombre_carpeta";
+      echo "Si quiere crear un archivo seleccione (s) caso contrario seleccione (n)";
+      read crear_archivo;
+      if [ "$crear_archivo" == "s" ]; then
+        echo "Ingrese el nombre del archivo: ";
+        read nombre_archivo;
+        touch "$nombre_carpeta/$nombre_archivo";
+        echo "Archivo \"$nombre_carpeta/$nombre_archivo\" se ha creado correctamente";
+        ls -l "$nombre_carpeta/$nombre_archivo";
+        echo "Ingrese el contenido del archivo y use Ctrl+D para guardar: ";
+        cat > "$nombre_carpeta/$nombre_archivo";
+        echo "Contenido del archivo \"$nombre_carpeta/$nombre_archivo\": ";
+        cat "$nombre_carpeta/$nombre_archivo";
+        echo "Se guardo el archivo \"$nombre_carpeta/$nombre_archivo\" correctamente ";
+      fi
+      ;;
+    2)
+      echo "Ingrese el nombre del archivo: ";
+      read nombre_archivo;
+      touch "$nombre_archivo";
+      echo "El archivo \"$nombre_archivo\" se ha creado correctamente";
+      ls -l "$nombre_archivo";
+      echo "Ingrese el contenido del archivo y use Ctrl+D para guardar: ";
+      cat > "$nombre_archivo";
+      echo "Contenido del archivo \"$nombre_archivo\": ";
+      cat "$nombre_archivo";
+      echo "Se guardo el archivo \"$nombre_archivo\" correctamente ";
+      ;;
+    3)
+      echo "Si quiere eliminar una carpeta seleccione (c) o (a) si es un archivo";
+      read eliminar;
+      if [ "$eliminar" == "c" ]; then
+        echo "Ingrese el nombre de la carpeta que quiere eliminar: ";
+        read nombre_carpeta;
+        if [ -d "$nombre_carpeta" ]; then
+          rm -r "$nombre_carpeta";
+          echo "La carpeta \"$nombre_carpeta\" se ha eliminado";
+        else
+          echo "La carpeta \"$nombre_carpeta\" no existe";
+        fi
+      elif [ "$eliminar" == "a" ]; then
+        echo "Ingrese el nombre del archivo que quiere eliminar: ";
+        read nombre_archivo;
+        if [ -f "$nombre_archivo" ]; then
+          rm "$nombre_archivo";
+          echo "El archivo \"$nombre_archivo\" se ha eliminado";
+        else
+          echo "El archivo \"$nombre_archivo\" no existe";
+        fi
+      else
+        echo "Opcion no valida";
+      fi
+      ;;
+    4)
+      echo "Ingrese el nombre de la carpeta que quiere para ver los archivos: ";
+      read nombre_carpeta;
+      if [ -d "$nombre_carpeta" ]; then
+        echo "Contenido de la carpeta \"$nombre_carpeta\": ";
+        ls -la "$nombre_carpeta";
+      else
+        echo "La carpeta \"$nombre_carpeta\" no existe";
+      fi
+      ;;
+    5)
+      echo "Si quiere decargar una carpeta selccione (c) o (a) si es un archivo";
+      read descarga;
+      if [ "$descarga" == "c" ]; then
+        echo "Ingrese el nombre de la carpeta que quiere descargar: ";
+        read nombre_carpeta;
+        if [ -d "$nombre_carpeta" ]; then
+          echo "Descargando la carpeta"
+          rsync -avz -e "ssh -p '$port'" "$user@$server:/tmp/$nombre_carpeta/" "$descarga_ar$nombre_carpeta/" #rsync: Esta es la herramienta de sincronización de archivos utilizada para transferir y sincronizar archivos y directorios entre dos ubicaciones
+          echo "El contenido de la carpeta \"$nombre_carpeta\" se ha descargado a \"$descarga_ar/$nombre_carpeta\"";
+        else
+          echo "La carpeta \"$nombre_carpeta\" no existe";
+        fi
+      elif [ "$descarga" == "a" ]; then
+        echo "Ingrese el nombre del archivo que quiere descargar: ";
+        read nombre_archivo;
+        if [ -f "$nombre_archivo" ]; then
+          echo "Descargando archivo"
+          rsync -avz -e "ssh -p '$port'" "$user@$server:/tmp/$nombre_archivo" "'$descarga_ar'"
+          echo "El archivo \"$nombre_archivo\" se ha descargado a \"$descarga_ar\"";
+        else
+          echo "El archivo \"$nombre_archivo\" no existe";
+        fi
+      else
+        echo "Opcion no valida";
+      fi
+      ;;
+    6)
+      echo "Saliendo del programa";
+      exit 0;
+      ;;
+    *)
+      echo "Opcion no valida";
+      ;;
+  esac
+done;
+exec bash'
