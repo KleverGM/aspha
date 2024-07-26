@@ -96,7 +96,7 @@ while true; do
         read nombre_carpeta;
         if [ -d "$nombre_carpeta" ]; then
           echo "Descargando la carpeta"
-          rsync -avz -e "ssh -p '$port'" "$user@$server:/tmp/$nombre_carpeta/" "$descarga_ar$nombre_carpeta/" #rsync es una herramienta de sincronización de archivos utilizada para transferir y sincronizar archivos y directorios entre dos ubicaciones y permite establecer una conexión ssh en el puerto (-e "ssh -p '$port'").
+          rsync -avz -e "ssh -p '$port'" "$user@$server:/tmp/$nombre_carpeta/" "$descarga_ar$nombre_carpeta/" #rsync es una herramienta de sincronización y permite transferir y sincronizar archivos y directorios entre dos ubicaciones y permite establecer una conexión ssh en el puerto (-e "ssh -p '$port'")
           echo "El contenido de la carpeta \"$nombre_carpeta\" se ha descargado a \"$descarga_ar/$nombre_carpeta\"";
         else
           echo "La carpeta \"$nombre_carpeta\" no existe";
